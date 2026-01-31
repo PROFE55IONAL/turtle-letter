@@ -1,32 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>3D Tree with Wind 🌳🦋</title>
+<meta charset="UTF-8">
+<title>Bright 3D Tree 🌳🦋</title>
 
 <style>
   body {
     margin: 0;
     overflow: hidden;
-    background: #eafaf1;
-  }
-  canvas {
-    display: block;
+    background: #eafff4;
   }
 </style>
 </head>
 
 <body>
 
-<!-- Three.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
 <script>
-/* =====================
-   BASIC SCENE SETUP
-===================== */
+// =====================
+// SCENE + CAMERA
+// =====================
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xeafaf1, 8, 25);
+scene.background = new THREE.Color(0xeafff4);
 
 const camera = new THREE.PerspectiveCamera(
   60,
@@ -34,111 +30,143 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.set(0, 3, 10);
+camera.position.set(0, 3.5, 9);
 
+// =====================
+// RENDERER (COLOR FIX)
+// =====================
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setClearColor(0xeafaf1);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
 document.body.appendChild(renderer.domElement);
 
-/* =====================
-   LIGHTING
-===================== */
-const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-scene.add(ambient);
+// =====================
+// LIGHTING (BRIGHT)
+// =====================
+scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
-const sun = new THREE.DirectionalLight(0xffffff, 1);
-sun.position.set(5, 10, 5);
+const sun = new THREE.DirectionalLight(0xfff3dd, 1.6);
+sun.position.set(6, 10, 6);
 scene.add(sun);
 
-/* =====================
-   GROUND
-===================== */
+// =====================
+// GROUND
+// =====================
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(50, 50),
-  new THREE.MeshStandardMaterial({ color: 0xcfe8dc })
+  new THREE.MeshStandardMaterial({ color: 0xb6f2d6 })
 );
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -1;
 scene.add(ground);
 
-/* =====================
-   TREE (REAL 3D)
-===================== */
+// =====================
+// TREE (BRIGHT COLORS)
+// =====================
 const tree = new THREE.Group();
 
-/* Trunk */
+// Trunk
 const trunk = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.4, 0.6, 4, 16),
-  new THREE.MeshStandardMaterial({ color: 0x6b4226 })
+  new THREE.CylinderGeometry(0.45, 0.65, 4, 18),
+  new THREE.MeshStandardMaterial({ color: 0x7a4a2e })
 );
 trunk.position.y = 1;
 tree.add(trunk);
 
-/* Leaves clusters */
-const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x5fbf8f });
+// Leaves
 const leaves = [];
+const leafColors = [0x6dff9e, 0x4be37d, 0x2bdc6f];
 
-for (let i = 0; i < 6; i++) {
+for (let i = 0; i < 7; i++) {
   const leaf = new THREE.Mesh(
-    new THREE.SphereGeometry(1.4, 16, 16),
-    leafMaterial
+    new THREE.SphereGeometry(1.5, 20, 20),
+    new THREE.MeshStandardMaterial({
+      color: leafColors[i % leafColors.length]
+    })
   );
+
   leaf.position.set(
-    (Math.random() - 0.5) * 1.5,
-    3 + Math.random(),
-    (Math.random() - 0.5) * 1.5
+    (Math.random() - 0.5) * 1.8,
+    3 + Math.random() * 0.8,
+    (Math.random() - 0.5) * 1.8
   );
+
   leaves.push(leaf);
   tree.add(leaf);
 }
 
 scene.add(tree);
 
-/* =====================
-   BUTTERFLIES
-===================== */
+// =====================
+// BUTTERFLY (NO BOXES)
+// =====================
+function createButterfly() {
+  const butterfly = new THREE.Group();
+
+  const wingMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.9,
+    side: THREE.DoubleSide
+  });
+
+  const wingGeo = new THREE.PlaneGeometry(0.8, 0.5);
+
+  const leftWing = new THREE.Mesh(wingGeo, wingMat);
+  const rightWing = new THREE.Mesh(wingGeo, wingMat);
+
+  leftWing.position.x = -0.4;
+  rightWing.position.x = 0.4;
+
+  butterfly.add(leftWing);
+  butterfly.add(rightWing);
+
+  butterfly.userData = { leftWing, rightWing };
+  return butterfly;
+}
+
 const butterflies = [];
-const butterflyMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
 
 for (let i = 0; i < 3; i++) {
-  const wing = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.8, 0.5),
-    butterflyMat
-  );
-  wing.position.set(
+  const b = createButterfly();
+  b.position.set(
     Math.random() * 4 - 2,
     3 + Math.random(),
     Math.random() * 4 - 2
   );
-  butterflies.push(wing);
-  scene.add(wing);
+  butterflies.push(b);
+  scene.add(b);
 }
 
-/* =====================
-   ANIMATION (WIND + LIFE)
-===================== */
-let clock = new THREE.Clock();
+// =====================
+// ANIMATION
+// =====================
+const clock = new THREE.Clock();
 
 function animate() {
   requestAnimationFrame(animate);
   const t = clock.getElapsedTime();
 
-  /* Wind sway for tree */
+  // 🌬️ Wind sway
   tree.rotation.z = Math.sin(t * 0.6) * 0.05;
 
   leaves.forEach((leaf, i) => {
-    leaf.position.x += Math.sin(t + i) * 0.001;
-    leaf.position.z += Math.cos(t + i) * 0.001;
+    leaf.position.x += Math.sin(t + i) * 0.0015;
+    leaf.position.z += Math.cos(t + i) * 0.0015;
   });
 
-  /* Butterflies natural motion */
+  // 🦋 Butterfly motion
   butterflies.forEach((b, i) => {
     b.position.x = Math.sin(t + i * 2) * 2;
-    b.position.y = 3 + Math.sin(t * 2 + i) * 0.4;
+    b.position.y = 3 + Math.sin(t * 2 + i) * 0.5;
     b.position.z = Math.cos(t + i * 2) * 2;
-    b.rotation.y = Math.sin(t * 5) * 0.5;
+
+    // wing flap
+    b.userData.leftWing.rotation.y = Math.sin(t * 10) * 0.6;
+    b.userData.rightWing.rotation.y = -Math.sin(t * 10) * 0.6;
   });
 
   renderer.render(scene, camera);
@@ -146,9 +174,9 @@ function animate() {
 
 animate();
 
-/* =====================
-   RESIZE
-===================== */
+// =====================
+// RESIZE
+// =====================
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
