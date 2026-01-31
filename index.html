@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>A Little Surprise 🐢🦋</title>
+<title>Little Surprise 🐢</title>
 
 <style>
 * {
@@ -13,12 +13,13 @@
 
 body {
   height: 100vh;
-  background: linear-gradient(#fdf6f0, #fde2e4);
+  background: radial-gradient(circle at top, #fff6e5, #f5d0c5);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: "Segoe UI", sans-serif;
   overflow: hidden;
+  perspective: 1000px;
 }
 
 /* ---------- ENVELOPE ---------- */
@@ -28,8 +29,8 @@ body {
   background: #fff;
   position: relative;
   cursor: pointer;
-  border-radius: 6px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
   transition: transform 0.3s;
 }
 
@@ -40,68 +41,78 @@ body {
 .envelope::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #f3f3f3;
-  clip-path: polygon(0 0, 50% 60%, 100% 0, 100% 100%, 0 100%);
+  inset: 0;
+  background: #f2f2f2;
+  clip-path: polygon(0 0, 50% 65%, 100% 0, 100% 100%, 0 100%);
 }
 
-.tap-text {
+.tap {
   position: absolute;
-  top: -35px;
+  top: -32px;
   width: 100%;
   text-align: center;
   color: #777;
-  font-size: 0.9rem;
 }
 
-/* ---------- SURPRISE ---------- */
+/* ---------- SCENE ---------- */
 .scene {
   display: none;
-  text-align: center;
+  position: relative;
+  transform-style: preserve-3d;
 }
 
+/* ---------- TURTLE ---------- */
 .turtle {
-  font-size: 5rem;
-  animation: pop 1s ease forwards;
+  font-size: 5.5rem;
+  transform: translateZ(-400px) scale(0.2);
+  animation: turtleIn 2.5s cubic-bezier(.17,.89,.32,1.49) forwards,
+             float 4s ease-in-out infinite 2.5s;
 }
 
-@keyframes pop {
-  from { transform: scale(0); }
-  to { transform: scale(1); }
+@keyframes turtleIn {
+  to {
+    transform: translateZ(0) scale(1);
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0) translateZ(0); }
+  50% { transform: translateY(-15px) translateZ(10px); }
+  100% { transform: translateY(0) translateZ(0); }
 }
 
 /* ---------- BUTTERFLIES ---------- */
 .butterfly {
   position: absolute;
   font-size: 1.8rem;
-  animation: float 6s infinite ease-in-out;
-  opacity: 0.9;
+  animation: orbit 6s linear infinite;
 }
 
-.b1 { top: 40%; left: 45%; animation-delay: 0s; }
-.b2 { top: 35%; left: 55%; animation-delay: 1s; }
-.b3 { top: 45%; left: 60%; animation-delay: 2s; }
+.b1 { animation-delay: 0s; }
+.b2 { animation-delay: 2s; }
+.b3 { animation-delay: 4s; }
 
-@keyframes float {
-  0% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-30px) rotate(10deg); }
-  100% { transform: translateY(0) rotate(0deg); }
+@keyframes orbit {
+  from {
+    transform: rotateY(0deg) translateX(120px) translateZ(40px);
+  }
+  to {
+    transform: rotateY(360deg) translateX(120px) translateZ(40px);
+  }
 }
 
 /* ---------- MESSAGE ---------- */
 .message {
   margin-top: 20px;
+  text-align: center;
   font-size: 1.2rem;
   color: #444;
   opacity: 0;
-  animation: fadeIn 2s ease forwards;
-  animation-delay: 1.2s;
+  animation: fade 2s ease forwards;
+  animation-delay: 2.8s;
 }
 
-@keyframes fadeIn {
+@keyframes fade {
   to { opacity: 1; }
 }
 </style>
@@ -110,7 +121,7 @@ body {
 <body>
 
 <div class="envelope" onclick="openEnvelope()">
-  <div class="tap-text">tap to open 💌</div>
+  <div class="tap">tap to open 💌</div>
 </div>
 
 <div class="scene" id="scene">
@@ -121,9 +132,8 @@ body {
   <div class="turtle">🐢</div>
 
   <div class="message">
-    Hey you 🌱  
-    <br>
-    Take life slow — you’re doing better than you think.
+    Take life slow.<br>
+    Even small steps move you forward 🌱
   </div>
 </div>
 
